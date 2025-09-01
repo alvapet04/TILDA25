@@ -1,17 +1,21 @@
 from array import array
 
+# Detta är en klass som är mallen för alla objekt i den länkade listan.
 class Node():
 
     def __init__(self, x, next=None):
         self.value = x
         self.next = next
 
-
+# Denna klass skapar de länkade listorna.
 class LinkedQ():
+
+# Init-metoden sätter attributen till none
     def __init__(self):
         self.first = None
         self.last = None
-    
+
+# Str-metoden gör så att objektet den länkade listan kan skrivas ut.    
     def __str__(self):
         z = self.first
         slutkort = ""
@@ -19,7 +23,8 @@ class LinkedQ():
             slutkort += str(z.value) + " "
             z = z.next
         return slutkort
-   
+
+# metoden enqueue lägger till en ny nod i den länkade listan även om listan är tom (som det bestämdes att de skulle va i init-metoden)
     def enqueue(self, x):
           if self.isEmpty():
             self.first = Node(x)
@@ -27,12 +32,14 @@ class LinkedQ():
           else:
             self.last.next = Node(x)
             self.last = self.last.next
-    
+
+# metoden dequeue tar ut det första elementet i den länkade listan och retunerar det ut plockade elementet.
     def dequeue(self):
           y = self.first.value 
           self.first = self.first.next 
           return y
-    
+
+# metoden isEmpty kollar om en länkad lista är tom.
     def isEmpty(self):
           if self.first == None:
                 return True
@@ -40,27 +47,4 @@ class LinkedQ():
                 return False
           
 
-import unittest
-#from linkedQFile import LinkedQ
 
-class TestQueue(unittest.TestCase):
-
-    def test_isEmpty(self):
-        #isEmpty ska returnera True för tom kö, False annars
-        q = LinkedQ()
-        self.assertTrue(q.isEmpty(), "isEmpty på tom kö")
-        q.enqueue(17)
-        self.assertFalse(q.isEmpty(), "isEmpty på icke-tom kö")
-
-    def test_order(self):
-        #Kontrollerar att kö-ordningen blir rätt
-        q = LinkedQ()
-        q.enqueue(1)
-        q.enqueue(2)
-        q.enqueue(3)
-        self.assertEqual(q.dequeue(), 1)
-        self.assertEqual(q.dequeue(), 2)
-        self.assertEqual(q.dequeue(), 3)
-
-if __name__ == "__main__":
-    unittest.main()
