@@ -56,7 +56,7 @@ def skriv(p):
     if not p:
         return 
     skriv(p.left)
-    print(p)
+    print(p.value)
     skriv(p.right)
 
 
