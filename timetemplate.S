@@ -10,32 +10,32 @@
 ###################
 # Macros for RARS #
 ###################
-.macro	PUSH (%reg)
-	addi	sp,sp,-4
-	sw	%reg,0(sp) 
-.end_macro
+#.macro	PUSH (%reg)
+#	addi	sp,sp,-4
+#	sw	%reg,0(sp) 
+#.end_macro
 
-.macro	POP (%reg)
-	lw	%reg,0(sp)
-	addi	sp,sp,4
-.end_macro
+#.macro	POP (%reg)
+#	lw	%reg,0(sp)
+#	addi	sp,sp,4
+#.end_macro
 ###################
 # Macros for DTEK #
 ###################
-#.macro	PUSH reg
-#	addi sp,sp,-4
-#	sw \reg,0(sp) 
-#.endm
+.macro	PUSH reg
+	addi sp,sp,-4
+	sw \reg,0(sp) 
+.endm
 
-#.macro	POP reg
-#	lw	\reg,0(sp)
-#	addi	sp,sp,4
-#.endm
+.macro	POP reg
+	lw	\reg,0(sp)
+	addi	sp,sp,4
+.endm
 #############################################################
 
 	.data
 	.align 2
-mytime:	.word 	0x5957
+mytime:	.word 	0x0000
 timstr:	.asciz 	"text more text lots of text\0"
 	.text
 	.globl timetemplate, tick, time2string
@@ -54,7 +54,7 @@ timetemplate:
 	jal     display_string
 	
 	# wait a little
-	li	a0, 2		# ms
+	li	a0, 1000		# ms
 	jal	delay
 	
 	# call tick
@@ -151,12 +151,12 @@ is_letter:
 
 
 time2string:
-	PUSH 	(ra)
-	PUSH	(s0)
-	PUSH	(s1)
-	PUSH	(s2)
-	PUSH	(s3)
-	PUSH	(a0)
+	PUSH 	ra
+	PUSH	s0
+	PUSH	s1
+	PUSH	s2
+	PUSH	s3
+	PUSH	a0
 	
 	add	a0, zero, a1
 	jal	hexasc 
@@ -176,7 +176,7 @@ time2string:
 	
 	addi	t0, zero, 0x3A
 	
-	POP	(a0)
+	POP	a0
 	
 	sb	s3, 0(a0)
 	sb	s2, 1(a0)
@@ -186,33 +186,28 @@ time2string:
 	sb	zero, 5(a0)
 		
 	
-	POP	(s3)
-	POP	(s2)
-	POP	(s1)
-	POP	(s0)
-	POP	(ra)
+	POP	s3
+	POP	s2
+	POP	s1
+	POP	s0
+	POP	ra
 	
 	jr	ra
 	
 delay:
-	PUSH	(s1)
-	PUSH	(s2)
-	li	s1, 1000	
-while_loop:
-	addi	s1, s1, -1
+	addi	a0, a0, -1
 	
-	addi	s2, zero, 0
+	addi	a1, zero, 0
 
 for_loop:
-	addi	s2, s2, 1
-	li 	t0, 700
+	addi	a1, a1, 1
+	li 	t0, 8000
 	
-	blt	s2, t0, for_loop
+	blt	a1, t0, for_loop
 	
-	bgt	s1, zero, while_loop
+	bgt	a0, zero, delay
 	
-	POP	(s2)
-	POP	(s1)
+	
 	
 	jr ra
 	
