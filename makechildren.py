@@ -33,7 +33,6 @@ def make_children(start_kö, ordträd, gamla):
     return start_kö
                 
                  
-
 def fråga_om_ord():
     startord = input(f"Vilket är ditt startord?")
     slutord = input(f"Vilket är ditt slutord?")
@@ -41,11 +40,11 @@ def fråga_om_ord():
 
 def utskrift(start_kö, svenska, slutord, gamla):
         if start_kö.isEmpty():
-             print(f"Det finns ingen väg!")
+             print(f"Det finns ingen väg till {slutord}")
              return
         word = start_kö.first.value
         if  word == slutord:
-                print (f"Det finns en väg!")
+                print (f"Det finns en väg till {slutord}")
                 return 
         else:
 
@@ -58,7 +57,6 @@ def main():
     startord, slutord = fråga_om_ord()
     start_kö = LinkedQ()
     start_kö.enqueue(startord)
-    start_kö = make_children(start_kö, svenska, gamla)
     utskrift(start_kö, svenska, slutord, gamla)
     
 main()
