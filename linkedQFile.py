@@ -20,7 +20,7 @@ class LinkedQ():
         z = self.first
         slutkort = ""
         while z != None:
-            slutkort += str(z.value) + " "
+            slutkort += str(z.value) + ""
             z = z.next
         return slutkort
 
@@ -45,6 +45,12 @@ class LinkedQ():
                 return True
           else:
                 return False
+          
+    def peek(self):
+        if not self.isEmpty():
+            return self.first.value
+        else:
+            return ""
           
 
 
