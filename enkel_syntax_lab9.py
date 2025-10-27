@@ -8,8 +8,6 @@ In  Sn  Sb  Te  I   Xe  Cs  Ba  La  Ce  Pr  Nd  Pm  Sm  Eu  Gd  Tb  Dy  Ho  Er  
 Ta  W   Re  Os  Ir  Pt  Au  Hg  Tl  Pb  Bi  Po  At  Rn  Fr  Ra  Ac  Th  Pa  U   Np  Pu  Am  Cm\
 Bk  Cf  Es  Fm  Md  No  Lr  Rf  Db  Sg  Bh  Hs  Mt  Ds  Rg  Cn  Fl  Lv").split()
 
-COUNTER = 0
-
 #Ärver all från Exception
 class Syntaxfel(Exception):
     pass
@@ -46,14 +44,6 @@ def grupp(molekylkö):
         if molekylkö.peek().isdigit():
             tal(molekylkö)
     
-        
-    
-
-#<molekyl> ::= <atom> | <atom><num>
-#def molekylisen (molekylkö):
-    #atom(molekylkö)
-    #if not molekylkö.isEmpty():
-        #tal(molekylkö)
 
 #<atom>  ::= <LETTER> | <LETTER><letter>
 def atom(molekylkö):
@@ -86,7 +76,6 @@ def liten_bokstav(molekylkö):
         return liten
 
 
-
 #<num>   ::= 2 | 3 | 4 | ...
 def tal(molekylkö):
     if not molekylkö.isEmpty():
@@ -109,14 +98,6 @@ def tömma_kön(molekylkö):
             molekylkö.dequeue()
             tömma_kön(molekylkö)
             return
-        
-def skrivut(molekylkö):
-    if not molekylkö.isEmpty():
-        print ( " ", end = "") 
-    while not molekylkö.isEmpty():
-        tecken = molekylkö.dequeue()
-        print ( tecken, end = "")
-    print()
 
 def lagra_molekyl(molekylen):
     molekylkö = LinkedQ()
