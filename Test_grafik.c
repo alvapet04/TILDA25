@@ -31,9 +31,60 @@ void färga_pixel( int x, int y, unsigned char röd_stor, unsigned char grön_st
     }
     unsigned int index = (unsigned int)y * VGA_BREDD + (unsigned int)x;
     volatile unsigned char *skärm_pekare = skräm_skrivare(index);
-    skärm_pekare = packa_färg (röd_stor, grön_stor, blå_stor);
+    *skärm_pekare = packa_färg (röd_stor, grön_stor, blå_stor);
 }
 
 void start_skärm(void){
 
+}
+
+/*Skapar en constant mall för äpplets olika färgers pixlars koordinater*/
+const unsigned int äpple16x16[7][16]= {
+    {0x0000,0x0200,0x0500,0x05F0,0x0D08,0x1304,0x20C4,0x20C3,0x2008,0x2008,0x2008,0x1010,0x0920,0x06C0,0x0000,0x0000},
+    {0x0000,0x0000,0x0200,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000},
+    {0x0000,0x0000,0x0000,0x0200,0x0200,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000},
+    {0x0000,0x0000,0x0000,0x0000,0x00F0,0x0030,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000},
+    {0x0000,0x0000,0x0000,0x0000,0x0000,0x00C8,0x0038,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000},
+    {0x0000,0x0000,0x0000,0x0000,0x0000,0x0C00,0x1800,0x10C0,0x11F0,0x1FF0,0x1FF0,0x0FE0,0x06C0,0x0000,0x0000,0x0000},
+    {0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0700,0x0F00,0x0E00,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000}
+};
+
+
+void rita_äpple( int y, int x, int index, unsigned char röd_stor, unsigned char grön_stor, unsigned char blå_stor) {
+    int rad, kolumn;
+    unsigned int linje;
+    unsigned char färg = packa_färg(röd_stor, grön_stor, blå_stor);
+
+    for (rad = 0; rad < 16; rad ++){
+        linje = äpple16x16[index][rad];
+        for (kolumn = 0; kolumn < 16; kolumn ++){
+            if (linje & (0x8000 >> kolumn)) {
+                int px = x + kolumn;
+                int py = y + rad;
+                if (px >= 0 && px < VGA_BREDD && py >= 0 && py < VGA_HÖJD){
+                    volatile unsigned char *skärm_pekare = skräm_skrivare(py * VGA_BREDD +px);
+                    *skärm_pekare = färg;
+                }
+            }
+        }
+    }
+}
+
+void färga_äpple( int x, int y){
+    rita_äpple(x, y, 0, 0, 0, 0);
+    rita_äpple(x, y, 1, 142, 83, 31);
+    rita_äpple(x, y, 2, 109, 61, 18);
+    rita_äpple(x, y, 3, 66, 221, 48);
+    rita_äpple(x, y, 4, 85, 107, 47);
+    rita_äpple(x, y, 5, 234, 28, 28);
+    rita_äpple(x, y, 6, 252, 127, 106);
+}
+
+void handle_interrupt(void) {
+    // Hantera avbrott här
+}
+
+int main (void){
+    färga_äpple(40, 64);
+    return 0;
 }
