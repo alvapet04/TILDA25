@@ -13,11 +13,13 @@ extern void time2string(char*,int);
 extern void tick(int*);
 extern void delay(int);
 extern int nextprime( int );
+extern void enable_interupt();
 
 #include <stdlib.h>
 #include <stdio.h>
 
 int timeoutcount = 0;
+int prime = 1234567;
 
 #define TIMER_BASE 0x04000020
 #define TIMER_STATUS  ((volatile unsigned int*)(TIMER_BASE + 0x0))
@@ -25,30 +27,14 @@ int timeoutcount = 0;
 #define TIMER_PERIODL ((volatile unsigned int*)(TIMER_BASE + 0x8))
 #define TIMER_PERIODH ((volatile unsigned int*)(TIMER_BASE + 0xC))
 
+#define TIMER_INTERUPPT_MASK 0x00000010
+#define SWITCH_INTERUPT_MASK 0x00000011
+#define SWITCH_BASE 0x04000010
+#define SWITCH_INTERUPT ((volatile unsigned int*)(SWITCH_BASE + 0x8))
+#define SWITCH_EDGECAPTURE ((volatile unsigned int*)(SWITCH_BASE + 0xc))
+
 int mytime = 0x5957;
 char textstring[] = "text, more text, and even more text!";
-
-/* Below is the function that will be called when an interrupt is triggered. */
-void handle_interrupt(unsigned cause) 
-{}
-
-/* Add your code here for initializing interrupts. */
-void labinit(void){
-/*Ställ in period = 2 999 999 (0x2DC6BF)*/
-    *TIMER_PERIODL = 2999999 & 0xFFFF;
-    *TIMER_PERIODH = (2999999 >> 16) & 0xFFFF;
-    /* Nollställ status (rensa ev. TO-flagga)*/
-    *TIMER_STATUS = 1;
-    /* Starta: kontinuerlig mode (CONT=1), starta (START=1)*/
-    /* ITO = 0 (vi använder inte IRQ utan polling)*/
-    *TIMER_CONTROL = (1 << 1) | (1 << 2);  // CONT=1, START=1
-}
-
-void set_leds (int led_mask){
-  volatile int * p = (volatile int *) 0x04000000;
-  led_mask &= 0x3FF;
-  *p = led_mask;
-}
 
 void set_display( int display_number, int value){
   volatile int * p = (volatile int *) 0x04000050 + (display_number * 0x10)/sizeof(int);
@@ -107,6 +93,53 @@ int get_btn(void){
 
 }
 
+/* Below is the function that will be called when an interrupt is triggered. */
+void handle_interrupt ( unsigned cause ) {
+/* Your code to display time on the 7-segment display */
+if (cause == TIMER_INTERUPPT_MASK){
+      *TIMER_STATUS = 1;
+      //cause = cause & ~TIMER_INTERUPPT_MASK;
+      if (timeoutcount%10 == 0){
+      int tid = mytime;
+      for (int i = 0; i<6; i++){
+        int siffran = tid & 0xF;
+        set_display (i, siffran);
+        tid /= 16;
+      }
+      tick (&mytime);
+      timeoutcount = 0;
+      }
+    timeoutcount ++;
+  }
+if (cause == SWITCH_INTERUPT_MASK){
+  delay(50);
+  tick (&mytime);
+  tick (&mytime);
+  *SWITCH_EDGECAPTURE = 1;
+}
+}
+
+/* Add your code here for initializing interrupts. */
+void labinit(void){
+/*Ställ in period = 2 999 999 (0x2DC6BF)*/
+    *TIMER_PERIODL = 2999999 & 0xFFFF;
+    *TIMER_PERIODH = (2999999 >> 16) & 0xFFFF;
+    /* Nollställ status (rensa ev. TO-flagga)*/
+    *TIMER_STATUS = 1;
+    /* Starta: kontinuerlig mode (CONT=1), starta (START=1)*/
+    /* ITO = 0 (vi använder inte IRQ utan polling)*/
+    *TIMER_CONTROL = (1 << 1) | (1 << 2);  // CONT=1, START=1
+    enable_interupt();
+    *SWITCH_INTERUPT = 4;
+}
+
+void set_leds (int led_mask){
+  volatile int * p = (volatile int *) 0x04000000;
+  led_mask &= 0x3FF;
+  *p = led_mask;
+}
+
+
 unsigned int hexDecimalToHex(unsigned int value) {
     unsigned int result = 0;
     unsigned int factor = 1;
@@ -120,79 +153,14 @@ unsigned int hexDecimalToHex(unsigned int value) {
 }
 
 /* Your code goes into main as well as any needed functions. */
-int main() {
-  // Call labinit()
+int main( void ) {
   labinit();
-
-  int led_mask = 0;
-  // Enter a forever loop
   while (1) {
-    if (*TIMER_STATUS & 0x1){
-      *TIMER_STATUS = 1;
-      if (timeoutcount%10 == 0){
-      time2string( textstring, mytime ); // Converts mytime to string
-      display_string( textstring ); //Print out the string 'textstring'
-      tick( &mytime );     // Ticks the clock once
-      set_leds(led_mask);
-
-      led_mask++;
-      int tid = mytime;
-      for (int i = 0; i<6; i++){
-        int siffran = tid & 0xF;
-        set_display (i, siffran);
-        tid /= 16;
-      
-      }
-      timeoutcount = 0;
-      }
-    timeoutcount ++;
-    }
-    
-    if (get_btn()){
-      int spakar = get_sw();
-      int avbryt = spakar & 0x80;
-      if (avbryt == 0x80){
-        break;
-      }
-      int inställning = spakar & 0x300;
-      switch (inställning){
-        
-      case 0x100:
-        mytime &= 0xFFFF00;
-        spakar &= 0x3F;
-        spakar = hexDecimalToHex(spakar);
-        if (spakar >0x59){
-          spakar -= 0x60;
-        }
-        mytime += spakar;
-        break;
-      case 0x200:
-        mytime &= 0xFF00FF;
-        spakar &= 0x3F;
-        spakar = hexDecimalToHex(spakar);
-        if (spakar >0x59){
-          spakar -= 0x60;
-        }
-        spakar *= 0x100;
-        mytime += spakar;
-        break;
-      case 0x300:
-        mytime &= 0x00FFFF;
-        spakar &= 0x3F;
-        spakar = hexDecimalToHex(spakar);
-        if (spakar >0x59){
-          spakar -= 0x60;
-        }
-        spakar *= 0x10000;
-        mytime += spakar;
-        break;
-      
-      default:
-        break;
-      }
-    }
+    print("Prime:");
+    prime = nextprime( prime );
+    print_dec( prime );
+    print("\n");
   }
-
 }
 
 
