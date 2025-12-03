@@ -216,7 +216,7 @@ void färga_bokstäver_masken( int x, int y, int skala){
     rita(x, y, 2, 255, 255, 0, skala, 8, bokstäver8x8, 0x80);
     x += 8*skala;
     /*Grön*/
-    rita(x, y, 3, 0, 204, 0, skala, 8, bokstäver8x8, 0x80);
+    rita(x, y, 3, 0, 230, 0, skala, 8, bokstäver8x8, 0x80);
     x += 8*skala;
     /*Blå*/
     rita(x, y, 4, 0, 0, 255, skala, 8, bokstäver8x8, 0x80);
